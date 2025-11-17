@@ -69,7 +69,7 @@ Sorry, this project is still under development and only supports Japanese, which
 - スナップショット機能に対応。
 
 #### NerconeFS Full
-- 小〜中規模のサーバー利用に対応できるファイルシステム。
+- 大規模のサーバー利用に対応できるファイルシステム。
 - 最大10PiBの可変長ファイルシステム。
 - ファイルサイズは最大50TiB
 - ファイル名は最大1000文字、文字セットはUTF-8
