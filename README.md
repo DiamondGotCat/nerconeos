@@ -17,6 +17,8 @@ Sorry, this project is still under development and only supports Japanese, which
 - 実用性のある、安定したOSにする
 - 一部はPOSIXやLinuxを真似する
 - amd64(x86_64)とaarch64(arm64)に対応する
+- ソフトウェアの形式はELF
+    - もしかしたら独自バイナリに対応するかも
 - RustがUEFIブートに対応していると聞いたのでRustで書く
     - PythonとSwiftが得意だけどどちらも無理そうなのでRust
     - Rustはいつか勉強しようと思ってたのでちょうどいい
@@ -48,18 +50,18 @@ ESP (EFI System Partition)
         - `BOOTRISCV64.EFI`: RISC-V 64bit (riscv64) 向けブートローダー (いつか追加するかも)
 
 ### NerconeOSのメインパーティション内の基本的な構造
-- `mod`: NKModの保管場所。全て`*-unknown-none`でビルド済みのバイナリファイル。アクセスにはスーパーユーザー権限が必要。
-    - `base`: `nerconeos-base`のバイナリ (これがブートローダーから呼ばれる)
-    - `shell`: `nerconeos-shell`のバイナリ
-    - `tui`: `nerconeos-tui`のバイナリ
-    - `tui-font`: `nerconeos-tui-font`のバイナリ
-    - `tui-gui`: `nerconeos-gui`のバイナリ
-    - `tui-fs`: `nerconeos-fs`のバイナリ
-    - `tui-driver`: `nerconeos-driver`のバイナリ
+- `mod`: NKModの保管場所。全て`*-unknown-none`でビルド済みのELFファイル。アクセスにはスーパーユーザー権限が必要。
+    - `base`: `nerconeos-base` (これがブートローダーから呼ばれる)
+    - `shell`: `nerconeos-shell`
+    - `tui`: `nerconeos-tui`
+    - `tui-font`: `nerconeos-tui-font`
+    - `gui`: `nerconeos-gui`
+    - `fs`: `nerconeos-fs`
+    - `driver`: `nerconeos-driver`
 - `ext`: NKExtの保管場所。アクセスにはスーパーユーザー権限が必要。
 - `app`: NerconeOS向けアプリの保管場所。アクセスにはスーパーユーザー権限が必要。
     - `usr`: スーパーユーザー権限なしでアクセスが可能なディレクトリ。
-- `bin`: Linuxの`/bin`と同じようなもの。バイナリの保管場所。アクセスにはスーパーユーザー権限が必要。
+- `bin`: Linuxの`/bin`と同じようなもの。ELFやバイナリの保管場所。アクセスにはスーパーユーザー権限が必要。
     - `usr`: スーパーユーザー権限なしでアクセスが可能なディレクトリ。
 - `dev`: Linuxの`/dev`と同じようなもの。アクセスにはスーパーユーザー権限が必要。
 - `etc`: Linuxの`/etc`と同じようなもの。アクセスにはスーパーユーザー権限が必要。
