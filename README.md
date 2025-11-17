@@ -4,6 +4,9 @@ A homemade OS from the kernel level
 ## for non-Japanese users:
 Sorry, this project is still under development and only supports Japanese, which is Nercone's native language. As the project progresses, it may support English and other languages ​​at some point.
 
+## 現在の状態
+現在は実際のコードが全くない状態で、計画段階です。
+
 ## 独自用語
 - `NerconeOS`: このプロジェクトの名前。
 - `NerKernel`: NerconeOSのカーネルのこと。
