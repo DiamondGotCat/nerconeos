@@ -10,13 +10,15 @@ Sorry, this project is still under development and only supports Japanese, which
 - `NerconeFS`: NerconeOS独自のパーティションのフォーマット。
 - `NKMod`: NerKernelの内蔵/標準モジュール。(基本的には`nerconeos-base`以外のモジュールを指す)
 - `NKExt`: NerKernelの拡張機能。NeXTSTEP/macOSの`kext`(Kernel EXTension)の名前を参考にしました。
+- `ドットファイル`: `.`から始まるファイル。 (独自ではない気がする)
 
 ## 現時点の予定
 - カーネルレベルから自作する
 - 実用性のある、安定したOSにする
+- 一部はPOSIXやLinuxを真似する
 - amd64(x86_64)とaarch64(arm64)に対応する
 - RustがUEFIブートに対応していると聞いたのでRustで書く
-    - PythonとSwiftが得意だけどどちらも無理そうなのでRust。
+    - PythonとSwiftが得意だけどどちらも無理そうなのでRust
     - Rustはいつか勉強しようと思ってたのでちょうどいい
 - 描画先はUEFIが渡してくれる(らしい)のでそれを利用
 - できるだけAIに頼らない
@@ -33,6 +35,7 @@ Sorry, this project is still under development and only supports Japanese, which
     - `nerconeos-gui`: GUI(Linuxでいうウィンドウマネージャーとデスクトップ環境)　最初は最低限実装して、後から本格的なUIにする
     - `nerconeos-fs`: NerconeFSと一般的に使われているLinuxファイルシステムの一部のものを実装。
     - `nerconeos-driver`: 一般的にPCについているハードウェア向けの内蔵ドライバー。一応、後付けのドライバーに切り替えられるようにする予定。
+- `.`から始まるファイル(ドットファイル)は隠しファイルとして扱う
 
 ### NerconeOSのEFIシステムパーティションの基本的な構造
 ESP (EFI System Partition)
@@ -45,7 +48,7 @@ ESP (EFI System Partition)
         - `BOOTRISCV64.EFI`: RISC-V 64bit (riscv64) 向けブートローダー (いつか追加するかも)
 
 ### NerconeOSのメインパーティション内の基本的な構造
-- `mod`: NKModの保管場所。全て`*-unknown-none`でビルド済みのバイナリファイル。変更にはスーパーユーザー権限が必要。
+- `mod`: NKModの保管場所。全て`*-unknown-none`でビルド済みのバイナリファイル。アクセスにはスーパーユーザー権限が必要。
     - `base`: `nerconeos-base`のバイナリ (これがブートローダーから呼ばれる)
     - `shell`: `nerconeos-shell`のバイナリ
     - `tui`: `nerconeos-tui`のバイナリ
@@ -53,8 +56,14 @@ ESP (EFI System Partition)
     - `tui-gui`: `nerconeos-gui`のバイナリ
     - `tui-fs`: `nerconeos-fs`のバイナリ
     - `tui-driver`: `nerconeos-driver`のバイナリ
-- `ext`: NKExtの保管場所。変更にはスーパーユーザー権限が必要。
-- `app`: NerconeOS向けアプリの保管場所。変更にはスーパーユーザー権限が必要。
-- `bin`: Linuxの`/bin`と同じようなもの。バイナリの保管場所。変更にはスーパーユーザー権限が必要。
-- `dev`: Linuxの`/dev`と同じようなもの。変更にはスーパーユーザー権限が必要。
-- `etc`: Linuxの`/etc`と同じようなもの。変更にはスーパーユーザー権限が必要。
+- `ext`: NKExtの保管場所。アクセスにはスーパーユーザー権限が必要。
+- `app`: NerconeOS向けアプリの保管場所。アクセスにはスーパーユーザー権限が必要。
+    - `usr`: スーパーユーザー権限なしでアクセスが可能なディレクトリ。
+- `bin`: Linuxの`/bin`と同じようなもの。バイナリの保管場所。アクセスにはスーパーユーザー権限が必要。
+    - `usr`: スーパーユーザー権限なしでアクセスが可能なディレクトリ。
+- `dev`: Linuxの`/dev`と同じようなもの。アクセスにはスーパーユーザー権限が必要。
+- `etc`: Linuxの`/etc`と同じようなもの。アクセスにはスーパーユーザー権限が必要。
+    - `usr`: スーパーユーザー権限なしでアクセスが可能なディレクトリ。
+- `tmp`: Linuxの`/etc`と同じようなもの。一時ファイルを保管しておく場所。
+- `usr`: ユーザーディレクトリの保管場所。アクセスにはスーパーユーザー権限が必要。
+    - `{ユーザー名}` ユーザーディレクトリ。そのユーザーはアクセス可能。
