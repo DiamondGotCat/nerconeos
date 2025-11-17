@@ -1,0 +1,10 @@
+[package]
+name = "nerconeos"
+version = "0.1.0"
+edition = "2024"
+description = "A homemade OS from the kernel level "
+readme = "README.md"
+repository = "https://github.com/DiamondGotCat/nerconeos"
+authors = ["Nercone <nercone@diamondgotcat.net>"]
+
+[dependencies]
