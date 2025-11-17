@@ -10,6 +10,7 @@ Sorry, this project is still under development and only supports Japanese, which
 - `NerconeFS`: NerconeOS独自のパーティションのフォーマット。
 - `NKMod`: NerKernelの内蔵/標準モジュール。(基本的には`nerconeos-base`以外のモジュールを指す)
 - `NKExt`: NerKernelの拡張機能。NeXTSTEP/macOSの`kext`(Kernel EXTension)の名前を参考にしました。
+- `KPart`: カーネルパーティションのこと。
 - `ドットファイル`: `.`から始まるファイル。 (独自ではない気がする)
 
 ## 現時点の予定
@@ -49,8 +50,9 @@ ESP (EFI System Partition)
         - `BOOTAA64.EFI`: AArch 64bit (aarch64/arm64) 向けブートローダー (追加予定)
         - `BOOTRISCV64.EFI`: RISC-V 64bit (riscv64) 向けブートローダー (いつか追加するかも)
 
-### NerconeOSのメインパーティション内の基本的な構造
-- `mod`: NKModの保管場所。全て`*-unknown-none`でビルド済みのELFファイル。アクセスにはスーパーユーザー権限が必要。
+### NerconeOSのカーネルパーティション内の基本的な構造
+FAT16/FAT32
+- `mod`: NKModの保管場所。全て`*-unknown-none`でビルド済みのELFファイル。
     - `base`: `nerconeos-base` (これがブートローダーから呼ばれる)
     - `shell`: `nerconeos-shell`
     - `tui`: `nerconeos-tui`
@@ -58,7 +60,17 @@ ESP (EFI System Partition)
     - `gui`: `nerconeos-gui`
     - `fs`: `nerconeos-fs`
     - `driver`: `nerconeos-driver`
-- `ext`: NKExtの保管場所。アクセスにはスーパーユーザー権限が必要。
+- `ext`: NKExtの保管場所。
+- `cfg`: カーネルの設定ファイルの保管場所。
+    - `nkmod.cfg`: NKMod関連の設定。モジュールの有効化/無効化などが可能。
+    - `nkmod`: それぞれのNKModの設定を保管する場所。
+        - `{NKModのID}.cfg`: `base`など。NKModの設定ファイル。
+    - `nkext.cfg`: NKExt関連の設定。カーネル拡張の有効化/無効化などが可能。
+    - `nkext`: それぞれのNKExtの設定を保管する場所。
+        - `{NKExtのID}.cfg`: NKExtの設定ファイル。
+
+### NerconeOSのメインパーティション内の基本的な構造
+FAT16/FAT32/Ext4
 - `app`: NerconeOS向けアプリの保管場所。アクセスにはスーパーユーザー権限が必要。
     - `usr`: スーパーユーザー権限なしでアクセスが可能なディレクトリ。
 - `bin`: Linuxの`/bin`と同じようなもの。ELFやバイナリの保管場所。アクセスにはスーパーユーザー権限が必要。
@@ -67,5 +79,7 @@ ESP (EFI System Partition)
 - `etc`: Linuxの`/etc`と同じようなもの。アクセスにはスーパーユーザー権限が必要。
     - `usr`: スーパーユーザー権限なしでアクセスが可能なディレクトリ。
 - `tmp`: Linuxの`/etc`と同じようなもの。一時ファイルを保管しておく場所。
+- `mnt`: Linuxの`/mnt`と同じようなもの。メインパーティション以外のパーティションのマウントポイント。
+    - `kpart`: KPartのマウントポイント。
 - `usr`: ユーザーディレクトリの保管場所。アクセスにはスーパーユーザー権限が必要。
     - `{ユーザー名}` ユーザーディレクトリ。そのユーザーはアクセス可能。
