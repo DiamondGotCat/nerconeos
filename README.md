@@ -17,6 +17,17 @@ Sorry, this project is still under development and only supports Japanese, which
 - `MPart`: メインパーティションのこと。
 - `ドットファイル`: `.`から始まるファイル。 (独自ではない気がする)
 
+## ロードマップ
+- [ ] RustからのUEFI機能の操作の方法などを調べる
+- [ ] ブートローダーの初期バージョンの開発
+- [ ] ブートローダーの動作を仮のデータを使用してテスト
+- [ ] `nerconeos-base`の最低限の機能だけの初期バージョンの開発
+- [ ] ブートローダーからの`nerconeos-base`の起動と、`nerconeos-base`の動作をテスト
+- [ ] `nerconeos-base`からモジュールを読み込めるようにする
+- [ ] `nerconeos-test`を作成し、読み込めるようにする
+- [ ] `nerconeos-shell`を簡易的に実装(`reboot`や`echo`のみ、など)
+- [ ] ブートローダーと`nerconeos-base`と`nerconeos-shell`を使用しテスト
+
 ## 現時点の予定
 - カーネルレベルから自作する
 - 実用性のある、安定したOSにする
