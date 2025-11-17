@@ -26,14 +26,13 @@ Sorry, this project is still under development and only supports Japanese, which
     - PythonとSwiftが得意だけどどちらも無理そうなのでRust
     - Rustはいつか勉強しようと思ってたのでちょうどいい
 - 描画先はUEFIが渡してくれるFramebufferを利用する。
-    - ただしFramebufferは高解像度化やマルチモニタ化などはできないため、通常は`nerconeos-driver`を利用する。
+    - ただしFramebufferは高解像度化やマルチモニタ化などはできないため、通常はモニタ対応は`nerconeos-driver`の一部実装が担当する。
 - できるだけAIに頼らない
     - Rustは(ほぼ)初めてなので、標準の機能とかで「こんな機能ある？」とかは聞くかもしれない
     - コード全体をAIに作らせたりリファクタリングさせたりするようなことはしない
     - AIに書かせるよりは自分で書いたほうがRustの勉強になりそうなのが理由の一つ
 - NerconeFSを実装してからExt4に対応する。
-    - Ext4はすでに存在するけれど、ジャーナリングとかのいろんな機能に対応するのは面倒なため、NerconeFSから先に実装する。
-    - NerconeFSも将来的には多機能化したいため、一応これは「NerconeFS Lite」とした方がいいかもしれない。
+    - Ext4はすでに存在するけれど、ジャーナリングとかのいろんな機能に対応するのは面倒なため、NerconeFS、特にNerconeFS Liteから先に実装する。
 - ちゃんとモジュール分けする
     - `nerconeos-base`: ベース (起動してNKModやNKExtをロードする)
     - `nerconeos-test`: 開発中に使用するモジュール。動作しているかなどの確認や実験に使用する。
@@ -49,6 +48,7 @@ Sorry, this project is still under development and only supports Japanese, which
 
 #### NerconeFS Lite
 - ある程度の利用に対応できるファイルシステム。
+- 実装を簡単にするための初期バージョンで、開発やテスト時に使用するバージョン。
 - 10GiBの固定長ファイルシステム
 - ファイルサイズは最大500MiB
 - ファイル名は最大10文字、文字セットはUTF-8
