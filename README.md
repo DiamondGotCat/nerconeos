@@ -43,7 +43,7 @@ Sorry, this project is still under development and only supports Japanese, which
 ### NerconeOSのEFIシステムパーティションの基本的な構造
 ESP (EFI System Partition)
 - `EFI`
-    - `BOOT`
+    - `BOOT`: UEFIで実行されるブートローダーの保管場所。全て`*-unknown-uefi`でビルド済みのELFファイル。
         - `BOOTIA32.EFI`: x86 32bit (i386) 向けブートローダー (いつか追加するかも)
         - `BOOTX64.EFI`: x86 64bit (amd64/x86_64) 向けブートローダー (メイン)
         - `BOOTARM.EFI`: AArch 32bit (aarch32/armhf) 向けブートローダー (いつか追加するかも)
