@@ -50,13 +50,25 @@ Sorry, this project is still under development and only supports Japanese, which
 - ちゃんとモジュール分けする
     - `nerconeos-base`: ベース (起動してNKModやNKExtをロードする)
     - `nerconeos-test`: 開発中に使用するモジュール。動作しているかなどの確認や実験に使用する。
-    - `nerconeos-shell`: シェル (自作シェル、ネルコンシェル/ネルシェル/ネルシュ`nerconesh` `nersh`)
     - `nerconeos-tui`: テキストの描画と、ある場合はシェルを実行して表示する
     - `nerconeos-tui-font`: `nerconeos-tui` で使う内蔵フォントパック
     - `nerconeos-gui`: GUI(Linuxでいうウィンドウマネージャーとデスクトップ環境)　最初は最低限実装して、後から本格的なUIにする
     - `nerconeos-fs`: NerconeFSと一般的に使われているLinuxファイルシステムの一部のものを実装。
     - `nerconeos-driver`: 一般的にPCについているハードウェア向けの内蔵ドライバー。モニターやUSB、GPUなど。後付けのドライバーを優先して、利用できない場合は`nerconeos-driver`の内部実装、対応していない場合はそのデバイスを「非対応」とする。
 - `.`から始まるファイル(ドットファイル)は隠しファイルとして扱う
+
+### ブート時の流れ
+1. UEFIがブートローダーを実行
+2. ブートローダーがKPartをFATとして読み込む
+3. baseモジュールを起動
+4. fsモジュールを起動し、MPartを利用可能に
+5. baseモジュールが他の有効化しているモジュールを起動
+    1. `test`
+    2. `tui`
+        1. `tui-font`
+    3. `driver`
+    4. `display`
+    5. `gui`
 
 ### NerconeFSの特徴や機能
 
@@ -91,10 +103,22 @@ Sorry, this project is still under development and only supports Japanese, which
 - スナップショット機能に対応。
 - 小規模のデータ破損の修復に対応。(破損する前まで戻すことができる)
 
+### KPart/MPartパーティション構成について
+KPartとMPartを分けたのは、実装のやりやすさによるものです。
+UEFIがFAT16/FAT32を標準でサポートしているため、実装が簡単です。
+そのためKPartは、ブートローダーから簡単に起動できます。
+MPartは、実際のカーネルが読み込むため、ある程度複雑でも問題ないと考えています。そのため、NerconeFSやExt4などに対応予定です。
+
+### 権限管理について
+権限管理は基本的にLinuxと同じです。
+ただし、ファイルの所有者を複数設定可能です。
+スーパーユーザー権限は、`root`ユーザー、または一時的なスーパーユーザーへの昇格で使用可能。
+なお、`sudo`などの実行はデフォルトでは`wheel`グループに所属しているユーザーが行える。
+
 ### NerconeOSのEFIシステムパーティションの基本的な構造
 ESP (EFI System Partition)
-- `EFI`
-    - `BOOT`: UEFIで実行されるブートローダーの保管場所。全て`*-unknown-uefi`でビルド済みのELFファイル。
+- `EFI/`
+    - `BOOT/`: UEFIで実行されるブートローダーの保管場所。全て`*-unknown-uefi`でビルド済みのUEFIアプリケーション(EFIバイナリ)。
         - `BOOTIA32.EFI`: x86 32bit (i386) 向けブートローダー (いつか追加するかも)
         - `BOOTX64.EFI`: x86 64bit (amd64/x86_64) 向けブートローダー (メイン)
         - `BOOTARM.EFI`: AArch 32bit (aarch32/armhf) 向けブートローダー (いつか追加するかも)
@@ -103,23 +127,22 @@ ESP (EFI System Partition)
 
 ### KPartの基本的な構造
 FAT16/FAT32
-- `mod`: NKModの保管場所。全て`*-unknown-none`でビルド済みのELFファイル。
+- `mod/`: NKModの保管場所。全て`*-unknown-none`でビルド済みのELFファイル。
     - `base`: `nerconeos-base` (これがブートローダーから呼ばれる)
     - `test`: `nerconeos-test`
-    - `shell`: `nerconeos-shell`
     - `tui`: `nerconeos-tui`
     - `tui-font`: `nerconeos-tui-font`
     - `display`: `nerconeos-display`
     - `gui`: `nerconeos-gui`
     - `fs`: `nerconeos-fs`
     - `driver`: `nerconeos-driver`
-- `ext`: NKExtの保管場所。
-- `cfg`: カーネルの設定ファイルの保管場所。
+- `ext/`: NKExtの保管場所。
+- `cfg/`: カーネルの設定ファイルの保管場所。
     - `nkmod.cfg`: NKMod関連の設定。モジュールの有効化/無効化などが可能。
-    - `nkmod`: それぞれのNKModの設定を保管する場所。
+    - `nkmod/`: それぞれのNKModの設定を保管する場所。
         - `{NKModのID}.cfg`: NKModの設定ファイル。[^1]
     - `nkext.cfg`: NKExt関連の設定。カーネル拡張の有効化/無効化などが可能。
-    - `nkext`: それぞれのNKExtの設定を保管する場所。
+    - `nkext/`: それぞれのNKExtの設定を保管する場所。
         - `{NKExtのID}.cfg`: NKExtの設定ファイル。[^2]
 
 [^1]: NKModのIDには、`kpart/mod/*`のそれぞれのファイル名が使用されます。
@@ -127,15 +150,26 @@ FAT16/FAT32
 
 ### MPartの基本的な構造
 NerconeFS/Ext4/etc
-- `app`: NerconeOS向けアプリの保管場所。アクセスにはスーパーユーザー権限が必要。
-    - `usr`: スーパーユーザー権限なしでアクセスが可能なディレクトリ。
-- `bin`: Linuxの`/bin`と同じようなもの。ELFやバイナリの保管場所。アクセスにはスーパーユーザー権限が必要。
-    - `usr`: スーパーユーザー権限なしでアクセスが可能なディレクトリ。
-- `dev`: Linuxの`/dev`と同じようなもの。アクセスにはスーパーユーザー権限が必要。
-- `etc`: Linuxの`/etc`と同じようなもの。アクセスにはスーパーユーザー権限が必要。
-    - `usr`: スーパーユーザー権限なしでアクセスが可能なディレクトリ。
-- `tmp`: Linuxの`/tmp`と同じようなもの。一時ファイルを保管しておく場所。
-- `mnt`: Linuxの`/mnt`と同じようなもの。MPart以外のパーティションのマウントポイント。
-    - `kpart`: KPartのマウントポイント。
-- `usr`: ユーザーディレクトリの保管場所。アクセスにはスーパーユーザー権限が必要。
-    - `{ユーザー名}` ユーザーディレクトリ。そのユーザーはアクセス可能。
+- `app/`: NerconeOS向けアプリの保管場所。(パーミッション: 705)
+    - `usr/`: スーパーユーザー権限なしでアクセスが可能なディレクトリ。(パーミッション: 707)
+- `bin/`: Linuxの`/bin/`と同じようなもの。ELFやバイナリの保管場所。(パーミッション: 705)
+    - `usr/`: スーパーユーザー権限なしでアクセスが可能なディレクトリ。(パーミッション: 707)
+    - `cat`: ファイルの内容をテキストとして標準出力に出力するコマンド。
+    - `touch`: ファイルの**最終更新日時**を更新する。ファイルがない場合は空のプレーンテキストファイルを作成する。
+    - `chmod`: ファイルのパーミッションを変更するコマンド。
+    - `chown`: ファイルの所有者を追加/変更するコマンド。
+    - `chgrp`: ユーザーの所属グループを追加/変更するコマンド。
+    - `adduser`: ユーザーを新規作成するコマンド。
+    - `deluser`: 実行したユーザー以外のユーザーを削除するコマンド。
+    - `passwd`: 特定のユーザーのパスワードを変更するコマンド
+    - `sh`: デフォルトのシェルにそのまま標準入力や引数などを伝えるコマンド。
+    - `chsh`: デフォルトのシェルを変更するコマンド。
+    - `nersh`: 自作シェル。
+- `dev/`: Linuxの`/dev/`と同じようなもの。(パーミッション: 705)
+- `etc/`: Linuxの`/etc/`と同じようなもの。(パーミッション: 705)
+    - `usr/`: スーパーユーザー権限なしでアクセスが可能なディレクトリ。(パーミッション: 707)
+- `tmp/`: Linuxの`/tmp/`と同じようなもの。一時ファイルを保管しておく場所。(パーミッション: 707)
+- `mnt/`: Linuxの`/mnt/`と同じようなもの。MPart以外のパーティションのマウントポイント。デバイスによってパーミッションは違う。
+    - `kpart/`: KPartのマウントポイント。(パーミッション: 707)
+- `usr/`: ユーザーディレクトリの保管場所。(パーミッション: 705)
+    - `{ユーザー名}/` ユーザーディレクトリ。そのユーザーはアクセス可能。(パーミッション: 700)
